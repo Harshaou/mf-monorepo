@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/* Shared design tokens + base layer (MF singleton at runtime; emitted per build). */
+@import '../../../packages/design-system/src/styles.css';
+
+/* Tell Tailwind v4 to scan the shell source AND the shared design system. */
+@source './src';
+@source '../../../packages/design-system/src';

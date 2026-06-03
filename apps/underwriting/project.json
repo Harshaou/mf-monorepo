@@ -1,0 +1,26 @@
+{
+  "name": "underwriting",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/underwriting/src",
+  "projectType": "application",
+  "tags": ["type:remote", "scope:insurer"],
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": { "command": "rsbuild dev", "cwd": "apps/underwriting" }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": { "command": "rsbuild build", "cwd": "apps/underwriting" }
+    },
+    "preview": {
+      "executor": "nx:run-commands",
+      "options": { "command": "rsbuild preview", "cwd": "apps/underwriting" }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc --noEmit -p apps/underwriting/tsconfig.json" }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "product-config",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/product-config/src",
+  "projectType": "application",
+  "tags": ["type:remote", "scope:insurer"],
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": { "command": "rsbuild dev", "cwd": "apps/product-config" }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": { "command": "rsbuild build", "cwd": "apps/product-config" }
+    },
+    "preview": {
+      "executor": "nx:run-commands",
+      "options": { "command": "rsbuild preview", "cwd": "apps/product-config" }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc --noEmit -p apps/product-config/tsconfig.json" }
+    }
+  }
+}

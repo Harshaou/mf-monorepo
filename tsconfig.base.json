@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "composite": false,
+    "declaration": true,
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "useDefineForClassFields": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ginja/contracts": ["packages/contracts/src/index.ts"],
+      "@ginja/design-system": ["packages/design-system/src/index.ts"],
+      "@ginja/design-system/styles.css": ["packages/design-system/src/styles.css"],
+      "@ginja/store": ["packages/store/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "**/dist"]
+}

@@ -1,0 +1,7 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '../../../packages/design-system/src/styles.css';
+
+/* Scan this remote's source AND the shared design system for utility classes. */
+@source './src';
+@source '../../../packages/design-system/src';

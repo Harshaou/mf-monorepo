@@ -1,0 +1,37 @@
+{
+  "name": "@ginja/workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Insurer Workspace — multi-tenant micro-frontend platform (Module Federation 2)",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.12.4",
+  "scripts": {
+    "dev": "nx run-many -t dev --parallel=10",
+    "build": "nx run-many -t build",
+    "lint": "nx run-many -t lint",
+    "typecheck": "nx run-many -t typecheck",
+    "graph": "nx graph",
+    "affected:build": "nx affected -t build",
+    "format": "prettier --write \"**/*.{ts,tsx,css,md,json}\""
+  },
+  "devDependencies": {
+    "@nx/eslint": "22.7.5",
+    "@nx/eslint-plugin": "22.7.5",
+    "@nx/js": "22.7.5",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.0.0",
+    "nx": "22.7.5",
+    "prettier": "^3.4.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.46.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["nx", "@swc/core", "@nx/nx-darwin-arm64"]
+  }
+}
