@@ -59,7 +59,7 @@ export function SubmissionsQueue() {
     <div className="mx-auto max-w-7xl space-y-6 p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Underwriting queue</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Underwriting queue first change</h1>
           <p className="text-muted-foreground mt-1">
             Submissions awaiting triage and decision for {tenant?.name}.
           </p>
