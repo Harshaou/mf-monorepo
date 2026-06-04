@@ -18,6 +18,9 @@ on:
       - 'apps/underwriting/**'
       - 'apps/product-config/**'
       - 'packages/**'
+  # Allow manual re-deploys from the Actions tab (e.g. to redeploy the current main
+  # without a code change). Builds from the selected branch's latest commit.
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -34,9 +37,9 @@ jobs:
             origin: https://ginja-product-config.pages.dev
     steps:
       - uses: actions/checkout@v4
+      # Version comes from package.json "packageManager" — don't also set it here, or
+      # pnpm/action-setup@v4 errors on the duplicate (ERR_PNPM_BAD_PNPM_VERSION).
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: 22
