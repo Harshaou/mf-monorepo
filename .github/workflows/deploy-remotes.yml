@@ -55,9 +55,11 @@ jobs:
 
       # Deploy dist/ (includes mf-manifest.json + _headers) to Cloudflare Pages.
       # --branch=main publishes to the project's production alias (matrix.origin).
+      # We invoke wrangler via `pnpm dlx` (same as `npx`) rather than
+      # cloudflare/wrangler-action, which mis-detects pnpm in this monorepo and fails.
+      # wrangler reads CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID from the env.
       - name: Deploy ${{ matrix.app }} to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy apps/${{ matrix.app }}/dist --project-name=${{ matrix.project }} --branch=main
+        run: pnpm dlx wrangler@4 pages deploy apps/${{ matrix.app }}/dist --project-name=${{ matrix.project }} --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
