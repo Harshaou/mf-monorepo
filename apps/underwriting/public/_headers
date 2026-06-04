@@ -1,0 +1,24 @@
+# Cloudflare Pages reads this file from the deploy root and applies these response
+# headers. Two concerns matter for a Module Federation remote served cross-origin:
+#
+# 1. CORS — the Shell is on a DIFFERENT origin (Vercel), so the browser will block
+#    fetching this remote's manifest/chunks unless we send Access-Control-Allow-Origin.
+#    "*" is fine to start; tighten to the Shell's exact origin once it has a stable URL.
+#
+# 2. Caching — hashed chunk filenames change on every build, so they're immutable and
+#    can be cached forever. mf-manifest.json keeps a STABLE name but its contents change
+#    each deploy, so it must NOT be cached or clients would pin to an old remote version.
+
+# Hashed, content-addressed assets: cache forever.
+/static/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+
+# The federation manifest + stats: always revalidate so a new deploy goes live.
+/mf-manifest.json
+  Access-Control-Allow-Origin: *
+  Cache-Control: no-cache
+
+/mf-stats.json
+  Access-Control-Allow-Origin: *
+  Cache-Control: no-cache

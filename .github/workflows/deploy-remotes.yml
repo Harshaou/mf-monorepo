@@ -1,6 +1,14 @@
-# TEMPLATE (non-live). Remotes + shared packages publish to a CDN (S3 + CloudFront).
-# Because the Shell resolves remote URLs at runtime, a remote can publish to the same
-# location and go live WITHOUT a Shell redeploy. Only affected remotes are built.
+# Remotes deploy to Cloudflare Pages — one Pages project per remote.
+# Because the Shell resolves remote URLs at runtime, a remote can redeploy and go live
+# WITHOUT a Shell redeploy (the manifest URL is stable; mf-manifest.json is served
+# no-cache so clients pick up the new version on next load).
+#
+# Each remote is built with PUBLIC_ASSET_PREFIX = its own Pages origin, so the chunks it
+# emits resolve to the CDN when the Shell (on a different origin) loads them.
+#
+# Both remotes deploy on every push touching apps/ or packages/, since a change in a
+# shared package affects both. (For more remotes, switch to `nx affected` + a dynamic
+# matrix to deploy only what changed.)
 name: Deploy Remotes
 
 on:
@@ -12,12 +20,20 @@ on:
       - 'packages/**'
 
 jobs:
-  deploy-remotes:
+  deploy:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: underwriting
+            project: ginja-underwriting
+            origin: https://ginja-underwriting.pages.dev
+          - app: product-config
+            project: ginja-product-config
+            origin: https://ginja-product-config.pages.dev
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -26,18 +42,19 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - uses: nrwl/nx-set-shas@v4
 
-      # Build only the remotes affected by this change.
-      - run: pnpm exec nx affected -t build --projects=tag:type:remote
-
-      # Publish each built remote (dist + mf-manifest.json) to the CDN.
-      - name: Publish to CDN
-        run: |
-          echo "TEMPLATE: for each affected remote -> aws s3 sync apps/<remote>/dist s3://\$BUCKET/<remote>/"
-          echo "TEMPLATE: aws cloudfront create-invalidation --distribution-id \$DIST_ID --paths '/*'"
+      # Build the remote with its production asset prefix baked in. This is what makes
+      # the remote's lazy chunks load from the CDN instead of the Shell's origin.
+      - name: Build ${{ matrix.app }}
+        run: pnpm exec nx build ${{ matrix.app }}
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          CDN_BUCKET: ${{ secrets.CDN_BUCKET }}
-          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+          PUBLIC_ASSET_PREFIX: ${{ matrix.origin }}
+
+      # Deploy dist/ (includes mf-manifest.json + _headers) to Cloudflare Pages.
+      # --branch=main publishes to the project's production alias (matrix.origin).
+      - name: Deploy ${{ matrix.app }} to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy apps/${{ matrix.app }}/dist --project-name=${{ matrix.project }} --branch=main
