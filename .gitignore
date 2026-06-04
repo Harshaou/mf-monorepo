@@ -9,3 +9,4 @@ dist
 @mf-types
 .vercel
 coverage
+.playwright-mcp
