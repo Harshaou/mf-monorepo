@@ -2,20 +2,8 @@ import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { pluginModuleFederation } from '@module-federation/rsbuild-plugin';
 import path from 'node:path';
-
-/**
- * Shared singletons. React, the router, the design system, the store and Zustand load
- * ONCE — from whichever app loads first — and every remote reuses that single copy.
- * The trade-off is version governance: when we bump these, we bump everywhere.
- */
-const shared = {
-  react: { singleton: true, requiredVersion: '^19.0.0' },
-  'react-dom': { singleton: true, requiredVersion: '^19.0.0' },
-  'react-router-dom': { singleton: true, requiredVersion: '^7.0.0' },
-  zustand: { singleton: true, requiredVersion: '^5.0.0' },
-  '@ginja/design-system': { singleton: true },
-  '@ginja/store': { singleton: true },
-};
+// Shared MF deps live in ONE place so the host and every remote stay byte-identical.
+import { sharedDeps as shared } from '../../mf.shared';
 
 // Remote manifest URLs, resolved at BUILD time (in Node, where process.env is available)
 // with a localhost fallback for `pnpm dev`. Defining them here guarantees the references
@@ -27,6 +15,12 @@ const remoteUrls = {
   ),
   'process.env.PUBLIC_PRODUCT_CONFIG_URL': JSON.stringify(
     process.env.PUBLIC_PRODUCT_CONFIG_URL ?? 'http://localhost:3002/mf-manifest.json'
+  ),
+  // Base URL of the standalone auth & entitlements backend (FastAPI on Railway).
+  // Defaults to the deployed service, so `pnpm dev` works with no local backend;
+  // override with PUBLIC_API_BASE_URL=http://localhost:8000 to hit a local one.
+  'process.env.PUBLIC_API_BASE_URL': JSON.stringify(
+    process.env.PUBLIC_API_BASE_URL ?? 'https://ginja-api-production.up.railway.app'
   ),
 };
 

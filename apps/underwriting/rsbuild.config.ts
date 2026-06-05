@@ -2,6 +2,8 @@ import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { pluginModuleFederation } from '@module-federation/rsbuild-plugin';
 import path from 'node:path';
+// Must match the Shell's shared block exactly — so both import the same definition.
+import { sharedDeps as shared } from '../../mf.shared';
 
 const PORT = 3001;
 const DEV_ORIGIN = `http://localhost:${PORT}`;
@@ -10,16 +12,6 @@ const DEV_ORIGIN = `http://localhost:${PORT}`;
 // CDN origin (e.g. https://underwriting.<project>.pages.dev) so the Shell — served from a
 // different origin — loads this remote's lazy chunks from the CDN, not from the Shell.
 const ASSET_PREFIX = process.env.PUBLIC_ASSET_PREFIX || DEV_ORIGIN;
-
-// Must match the shared singletons declared by the Shell. Coordinated version governance.
-const shared = {
-  react: { singleton: true, requiredVersion: '^19.0.0' },
-  'react-dom': { singleton: true, requiredVersion: '^19.0.0' },
-  'react-router-dom': { singleton: true, requiredVersion: '^7.0.0' },
-  zustand: { singleton: true, requiredVersion: '^5.0.0' },
-  '@ginja/design-system': { singleton: true },
-  '@ginja/store': { singleton: true },
-};
 
 export default defineConfig({
   // CORS + absolute asset prefix so the Shell (:3000) can load this remote (:3001).

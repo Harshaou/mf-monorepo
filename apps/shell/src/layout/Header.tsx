@@ -1,13 +1,13 @@
-import { useWorkspaceStore } from '@ginja/store';
+import { useWorkspaceStore, selectTenant } from '@ginja/store';
 import { Button, Input, Separator } from '@ginja/design-system';
-import { Moon, PanelLeft, Search, Sun } from 'lucide-react';
-import { TenantSwitcher } from './TenantSwitcher';
+import { Building2, Moon, PanelLeft, Search, Sun } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 
 export function Header() {
   const toggleSidebar = useWorkspaceStore((s) => s.toggleSidebar);
   const theme = useWorkspaceStore((s) => s.theme);
   const toggleTheme = useWorkspaceStore((s) => s.toggleTheme);
+  const tenant = useWorkspaceStore(selectTenant);
 
   return (
     <header className="bg-background flex h-14 shrink-0 items-center gap-3 border-b px-4">
@@ -24,7 +24,12 @@ export function Header() {
 
       <Separator orientation="vertical" className="mx-1 h-6" />
 
-      <TenantSwitcher />
+      {tenant && (
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <Building2 className="text-muted-foreground size-4" />
+          <span className="max-w-40 truncate">{tenant.name}</span>
+        </div>
+      )}
 
       <div className="relative ml-auto hidden max-w-sm flex-1 md:block">
         <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />

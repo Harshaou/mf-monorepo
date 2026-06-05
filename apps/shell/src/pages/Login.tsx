@@ -15,8 +15,9 @@ import { DEMO_TENANTS } from '../data/tenants';
 import { login } from '../services/auth';
 
 /**
- * Mock single-login. Credentials are validated against the demo accounts; a successful
- * login yields the tenant's entitlements, which decide the entire composed workspace.
+ * Single-login against the auth backend. Credentials are verified server-side; a
+ * successful login yields the tenant's entitlements, which decide the entire composed
+ * workspace. The demo-account buttons below are convenience hints for the demo only.
  */
 export function Login() {
   const setSession = useWorkspaceStore((s) => s.setSession);
