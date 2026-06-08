@@ -1,0 +1,5 @@
+# The Shell is a client-side SPA (createBrowserRouter). Cloudflare Pages does NOT do
+# SPA fallback by default, so without this a hard-refresh or deep link to any route
+# the server doesn't have a file for (e.g. /underwriting/...) returns 404. Rewrite all
+# unmatched paths to index.html with a 200 so React Router handles them client-side.
+/*  /index.html  200
