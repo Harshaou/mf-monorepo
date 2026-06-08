@@ -100,11 +100,12 @@ them everywhere.
 
 ## Deployment
 
-Delivery follows the architecture (configs under `.github/workflows` are **templates**):
-the **Shell** deploys to Vercel; **remotes + shared packages** publish to a CDN (S3 +
-CloudFront) via `nx affected`. Because the Shell resolves remote URLs at runtime, a remote
-can publish a new version to the same location and go live **without a Shell redeploy**.
-In production, the set of allowed remote origins is restricted for security.
+The **Shell** and the **remotes** both deploy to **Cloudflare Pages** — the Shell via
+Cloudflare's Git integration, the remotes via GitHub Actions
+(`.github/workflows/deploy-remotes.yml` → `wrangler`). Because the Shell resolves remote
+URLs at runtime, a remote can publish a new version to the same location and go live
+**without a Shell redeploy**. In production, the set of allowed remote origins is
+restricted for security. See [DEPLOYMENT.md](./DEPLOYMENT.md) for the full flow.
 
 ## Status / mocked pieces
 
@@ -119,6 +120,5 @@ intentionally-mocked seams are:
   each entitled remote's manifest URL from the module catalog, using localhost defaults
   (overridable via `PUBLIC_*_URL` build-time env vars). In production this comes from a
   per-tenant edge config so a remote can ship without a Shell redeploy.
-- **Deploy wiring** — Vercel/CDN config under `.github/workflows` are templates.
 
 Demo accounts and their entitlements are listed under [Getting started](#getting-started).

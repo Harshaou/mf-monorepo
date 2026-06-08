@@ -332,14 +332,14 @@ and the API/event layer — never cross-host federation.
 
 Delivery follows the architecture: the **Shell and each Remote ship independently.**
 
-| Artifact                      | Deploy target         | Driven by                               |
-| ----------------------------- | --------------------- | --------------------------------------- |
-| **Shell**                     | Vercel                | Vercel's Git integration (auto on push) |
-| **Remotes + shared packages** | CDN (S3 + CloudFront) | GitHub Actions                          |
+| Artifact                      | Deploy target         | Driven by                                   |
+| ----------------------------- | --------------------- | ------------------------------------------- |
+| **Shell**                     | Cloudflare Pages      | Cloudflare's Git integration (auto on push) |
+| **Remotes + shared packages** | Cloudflare Pages      | GitHub Actions → `wrangler`                 |
 
 The flow: a developer pushes, CI triggers, Nx's affected graph detects which projects actually
-changed, only those are built, the built remotes are published to the CDN, and the Shell only
-redeploys when the Shell itself changed.
+changed, only those are built, the built remotes are published to Cloudflare Pages, and the Shell
+only redeploys when the Shell itself changed.
 
 Because the Shell resolves remote locations at runtime, a remote can publish a new version to the
 same location and go live without a Shell redeploy. In production, the set of remote origins

@@ -1,7 +1,7 @@
 # Cloudflare Pages reads this file from the deploy root and applies these response
 # headers. Two concerns matter for a Module Federation remote served cross-origin:
 #
-# 1. CORS — the Shell is on a DIFFERENT origin (Vercel), so the browser will block
+# 1. CORS — the Shell is on a DIFFERENT origin (its own Cloudflare Pages project), so the browser will block
 #    fetching this remote's manifest/chunks unless we send Access-Control-Allow-Origin.
 #    "*" is fine to start; tighten to the Shell's exact origin once it has a stable URL.
 #

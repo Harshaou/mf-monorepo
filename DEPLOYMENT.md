@@ -20,7 +20,7 @@ this freedom is coordinated version governance for the shared singletons (see §
 
 | Piece | Project / app | Hosted on | Production URL |
 | --- | --- | --- | --- |
-| Shell (host) | `apps/shell` | **Vercel** (Git integration) | `https://mf-monorepo.vercel.app` |
+| Shell (host) | `apps/shell` | **Cloudflare Pages** (Git integration) | `https://ginja-shell.pages.dev` |
 | Underwriting remote | `apps/underwriting` | **Cloudflare Pages** | `https://ginja-underwriting.pages.dev` |
 | Product Config remote | `apps/product-config` | **Cloudflare Pages** | `https://ginja-product-config.pages.dev` |
 | Shared libs | `packages/*` | not deployed standalone | bundled into consumers |
@@ -29,15 +29,30 @@ How each deploys:
 
 | You change… | What redeploys | Trigger |
 | --- | --- | --- |
-| `apps/shell/**` | Shell only (Vercel) | push to `main` |
+| `apps/shell/**` | Shell only (Cloudflare) | push to `main` |
 | `apps/underwriting/**` | Underwriting remote (Cloudflare) | push to `main` |
 | `apps/product-config/**` | Product Config remote (Cloudflare) | push to `main` |
 | `packages/**` | **Both** remotes **and** the Shell | push to `main` (both pipelines fire) |
 
+Everything lives on **Cloudflare Pages**, but the Shell and the remotes deploy by two
+different mechanisms:
+
 - **Remotes:** deployed by GitHub Actions → `wrangler` → Cloudflare Pages. See
   `.github/workflows/deploy-remotes.yml`.
-- **Shell:** deployed by Vercel's Git integration (no workflow file). Vercel watches
-  `main` and also posts **preview deploys** on every PR.
+- **Shell:** deployed by **Cloudflare Pages' Git integration** (no workflow file — the
+  dashboard config *is* the source of truth). Cloudflare watches `main` and also posts
+  **preview deploys** on every PR. The build settings, configured once in the Pages
+  project, are:
+  | Setting | Value |
+  | --- | --- |
+  | Build command | `pnpm exec nx build shell` |
+  | Build output directory | `apps/shell/dist` |
+  | Root directory | *(repo root — leave blank)* |
+  | Env vars | `PUBLIC_UNDERWRITING_URL`, `PUBLIC_PRODUCT_CONFIG_URL`, `NODE_VERSION=22` (see §11) |
+
+  SPA routing relies on `apps/shell/public/_redirects` (`/* → /index.html 200`); without
+  it, a deep link or hard-refresh of a sub-route 404s. Cache policy is in
+  `apps/shell/public/_headers`.
 - **CI:** `.github/workflows/ci.yml` runs `nx affected` lint/typecheck/build on every
   push and PR.
 
@@ -54,7 +69,7 @@ pnpm dev                           # 2. verify locally (shell :3000, remotes :30
 git push -u origin my-change       # 3. push the branch
 # 4. open a PR on GitHub:
 #      → CI runs (lint / typecheck / build, nx-affected)
-#      → Vercel posts a PREVIEW deploy of the shell on the PR
+#      → Cloudflare Pages posts a PREVIEW deploy of the shell on the PR
 # 5. review the preview, get checks green
 # 6. merge to main  → production deploys fire automatically
 # 7. verify production (§8)
@@ -81,9 +96,13 @@ Example: tweak the underwriting table UI. Touches only `apps/underwriting/**`.
 Example: change the layout, login page, or sidebar. Touches only `apps/shell/**`.
 
 1. Branch → edit → `pnpm dev`.
-2. PR → Vercel gives a preview URL → merge to `main`.
-3. Vercel rebuilds and deploys the Shell. Remotes untouched.
-4. Verify on `https://mf-monorepo.vercel.app`.
+2. PR → Cloudflare gives a preview URL → merge to `main`.
+3. Cloudflare rebuilds and deploys the Shell. Remotes untouched.
+4. Verify on `https://ginja-shell.pages.dev`.
+
+> Note: a **preview** Shell still loads the **production** remotes — the remote manifest
+> URLs are baked in at build time (§11) and point at the remotes' production
+> `*.pages.dev` origins, not at per-PR previews.
 
 ## 6. Scenario C — Shared-package change (the careful one)
 
@@ -144,7 +163,7 @@ bump as a breaking change (§6). Minor/patch bumps within the declared range are
   curl -sI https://ginja-underwriting.pages.dev/mf-manifest.json
   # expect: HTTP/2 200, access-control-allow-origin: *, cache-control: no-cache
   ```
-- **End-to-end:** open `https://mf-monorepo.vercel.app`, log in (demo: `dana@acme.example`
+- **End-to-end:** open `https://ginja-shell.pages.dev`, log in (demo: `dana@acme.example`
   / `acme123` — Acme sees both modules), open a module, and check the browser
   **Network** tab shows requests to `*.pages.dev/mf-manifest.json` and chunk loads
   returning `200`.
@@ -155,7 +174,8 @@ bump as a breaking change (§6). Minor/patch bumps within the declared range are
 
 - **Remote:** Cloudflare dashboard → the Pages project → **Deployments** → **Rollback**
   to a previous deployment.
-- **Shell:** Vercel dashboard → the project → **Deployments** → **Instant Rollback**.
+- **Shell:** Cloudflare dashboard → the `ginja-shell` Pages project → **Deployments** →
+  **Rollback** to a previous deployment.
 
 Both are instant and require no rebuild.
 
@@ -185,23 +205,25 @@ The one flow with manual setup steps:
    ```
 4. Register it in the Shell's catalog (`apps/shell/src/data/catalog.ts`) with its
    `remoteName`, and add a `PUBLIC_<NEW>_URL` entry in `runtime-config.ts` + the matching
-   env var in Vercel.
+   build-time env var in the Shell's Cloudflare Pages project (Settings → Variables and
+   Secrets), then redeploy the Shell.
 5. Push → both deploy.
 
 ---
 
 ## 11. Environment variables reference
 
-### Shell (set in Vercel → Project → Settings → Environment Variables)
+### Shell (set in Cloudflare Pages → the `ginja-shell` project → Settings → Variables and Secrets)
 
 | Name | Value | Purpose |
 | --- | --- | --- |
 | `PUBLIC_UNDERWRITING_URL` | `https://ginja-underwriting.pages.dev/mf-manifest.json` | Where the Shell finds the underwriting remote |
 | `PUBLIC_PRODUCT_CONFIG_URL` | `https://ginja-product-config.pages.dev/mf-manifest.json` | Where the Shell finds the product-config remote |
+| `NODE_VERSION` | `22` | Cloudflare's default Node is older than rsbuild/React 19 need |
 
-Read in `apps/shell/src/services/runtime-config.ts`; both fall back to `localhost` for
-`pnpm dev`. **These are baked in at build time** — changing them in Vercel requires a
-redeploy of the Shell to take effect.
+The two `PUBLIC_*_URL` vars are read in `apps/shell/src/services/runtime-config.ts`; both
+fall back to `localhost` for `pnpm dev`. **They are baked in at build time** — changing
+them in Cloudflare requires a redeploy of the Shell to take effect.
 
 ### Remotes (set per-build by `deploy-remotes.yml`)
 
@@ -237,7 +259,8 @@ ports in each remote's `rsbuild.config.ts`.
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| Module shows "Coming soon" in prod | Shell built without the `PUBLIC_*_URL` env var (using localhost fallback) | Set the env var in Vercel, **redeploy the Shell** |
+| Module shows "Coming soon" in prod | Shell built without the `PUBLIC_*_URL` env var (using localhost fallback) | Set the env var in the Shell's Cloudflare Pages project, **redeploy the Shell** |
+| Shell 404s on hard-refresh of a sub-route | `apps/shell/public/_redirects` missing/not deployed | Confirm it exists (`/* → /index.html 200`); it's copied to `dist/` on build |
 | Remote chunks 404 in prod | Built without `PUBLIC_ASSET_PREFIX` (chunks point at localhost) | Ensure the deploy workflow's matrix sets the right origin; redeploy |
 | CORS error loading a remote | `_headers` missing/not deployed | Confirm `apps/<remote>/public/_headers` exists; it's copied to `dist/` on build |
 | New remote version not picked up | `mf-manifest.json` cached | It's served `no-cache`; hard-refresh. Chunks are content-hashed + immutable |

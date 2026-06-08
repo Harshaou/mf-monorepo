@@ -98,6 +98,7 @@ contract makes loading throw loudly rather than render broken.
 
 ## Mocked pieces (intentional)
 
-Real auth + live entitlements API (`auth.ts`), per-tenant runtime config from the edge
-(`runtime-config.ts`, uses localhost defaults), and live Vercel/CDN deploy wiring
-(`.github/workflows/*` are templates). Demo tenants are in `apps/shell/src/data/tenants.ts`.
+Real auth + live entitlements API (`auth.ts`) and per-tenant runtime config from the edge
+(`runtime-config.ts`, uses localhost defaults / build-time `PUBLIC_*_URL`). Deploy wiring
+is real: the Shell deploys via Cloudflare Pages' Git integration, the remotes via
+`.github/workflows/deploy-remotes.yml`. Demo tenants are in `apps/shell/src/data/tenants.ts`.
