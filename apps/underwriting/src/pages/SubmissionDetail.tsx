@@ -34,7 +34,7 @@ export function SubmissionDetail() {
     <div className="mx-auto max-w-6xl space-y-6 p-6">
       <Button asChild variant="ghost" size="sm" className="-ml-2">
         <Link to="..">
-          <ArrowLeft className="size-4" /> Back to queue
+          <ArrowLeft className="size-4" /> Back to queue , super
         </Link>
       </Button>
 
