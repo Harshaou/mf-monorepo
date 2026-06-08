@@ -22,9 +22,7 @@ export function Overview() {
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Welcome, {tenant?.name}
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome, {tenant?.name} buhaa</h1>
         <p className="text-muted-foreground mt-1">
           Your workspace is composed at runtime from the modules you're entitled to.
         </p>
@@ -44,7 +42,11 @@ export function Overview() {
               <CardDescription>{m.description}</CardDescription>
             </CardHeader>
             <CardContent className="mt-auto">
-              <Button asChild variant={m.remoteName ? 'default' : 'secondary'} disabled={!m.remoteName}>
+              <Button
+                asChild
+                variant={m.remoteName ? 'default' : 'secondary'}
+                disabled={!m.remoteName}
+              >
                 <Link to={m.route}>
                   Open <ArrowRight className="size-4" />
                 </Link>
