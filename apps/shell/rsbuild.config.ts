@@ -16,12 +16,6 @@ const remoteUrls = {
   'process.env.PUBLIC_PRODUCT_CONFIG_URL': JSON.stringify(
     process.env.PUBLIC_PRODUCT_CONFIG_URL ?? 'http://localhost:3002/mf-manifest.json'
   ),
-  // Base URL of the standalone auth & entitlements backend (FastAPI on Railway).
-  // Defaults to the deployed service, so `pnpm dev` works with no local backend;
-  // override with PUBLIC_API_BASE_URL=http://localhost:8000 to hit a local one.
-  'process.env.PUBLIC_API_BASE_URL': JSON.stringify(
-    process.env.PUBLIC_API_BASE_URL ?? 'https://ginja-api-production.up.railway.app'
-  ),
 };
 
 export default defineConfig({

@@ -36,15 +36,19 @@ pnpm install
 pnpm dev          # starts shell:3000, underwriting:3001, product-config:3002
 ```
 
-Open **http://localhost:3000** and sign in as one of the demo tenants:
+Open **http://localhost:3000** and sign in as one of the demo accounts below. There is
+**no backend** — auth and entitlements are mocked entirely from
+[`apps/shell/src/data/tenants.ts`](./apps/shell/src/data/tenants.ts). On the login screen
+you can click any account to auto-fill its credentials.
 
-| Tenant | Entitlements | What you see |
-| --- | --- | --- |
-| **Acme Insurance** | Underwriting + Product Config | both modules in the sidebar |
-| **Beacon Mutual** | Product Config only | Underwriting hidden → "Not entitled" if visited |
-| **Summit Re** | Underwriting + Reinsurance (unbuilt) | Underwriting + a "Coming soon" entry |
+| Tenant | Email | Password | Entitlements | What you see |
+| --- | --- | --- | --- | --- |
+| **Acme Insurance** | `dana@acme.example` | `acme123` | Underwriting + Product Config | both modules in the sidebar |
+| **Beacon Mutual** | `sam@beacon.example` | `beacon123` | Product Config only | Underwriting hidden → "Not entitled" if visited |
+| **Summit Re** | `priya@summit.example` | `summit123` | Underwriting + Reinsurance (unbuilt) | Underwriting + a "Coming soon" entry |
 
-Switch tenants from the header to watch the workspace re-compose **with no rebuild**.
+Each account belongs to a tenant with a **different entitlement set**, so the whole
+runtime-composition story is visible just by signing in as a different account.
 
 Each remote also runs standalone for isolated development (e.g. `nx dev underwriting`
 → http://localhost:3001), framed by a minimal dev shell.
@@ -104,6 +108,17 @@ In production, the set of allowed remote origins is restricted for security.
 
 ## Status / mocked pieces
 
-Per `ARCHITECTURE.md`, these are intentionally mocked here: real auth + live entitlements
-API (`apps/shell/src/services/auth.ts`), per-tenant runtime config from the edge
-(`runtime-config.ts`, localhost defaults), and live Vercel/CDN wiring.
+This repo runs entirely on **mock data — there are no backend APIs to stand up**. The
+intentionally-mocked seams are:
+
+- **Auth + entitlements** (`apps/shell/src/services/auth.ts`) — `login()` validates
+  credentials against the demo accounts in `apps/shell/src/data/tenants.ts` and returns a
+  `UserSession`. In production this is a real auth exchange whose token claims carry the
+  tenant and its entitlements.
+- **Per-tenant runtime config** (`apps/shell/src/services/runtime-config.ts`) — resolves
+  each entitled remote's manifest URL from the module catalog, using localhost defaults
+  (overridable via `PUBLIC_*_URL` build-time env vars). In production this comes from a
+  per-tenant edge config so a remote can ship without a Shell redeploy.
+- **Deploy wiring** — Vercel/CDN config under `.github/workflows` are templates.
+
+Demo accounts and their entitlements are listed under [Getting started](#getting-started).

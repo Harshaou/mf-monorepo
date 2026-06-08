@@ -11,7 +11,6 @@ import {
   DropdownMenuTrigger,
 } from '@ginja/design-system';
 import { LogOut } from 'lucide-react';
-import { clearToken } from '../services/auth';
 
 function initials(name: string) {
   return name
@@ -26,11 +25,6 @@ export function UserMenu() {
   const user = useWorkspaceStore(selectUser);
   const logout = useWorkspaceStore((s) => s.logout);
   if (!user) return null;
-
-  function signOut() {
-    clearToken();
-    logout();
-  }
 
   return (
     <DropdownMenu>
@@ -50,7 +44,7 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onSelect={() => signOut()}>
+        <DropdownMenuItem variant="destructive" onSelect={() => logout()}>
           <LogOut className="size-4" />
           Sign out
         </DropdownMenuItem>
